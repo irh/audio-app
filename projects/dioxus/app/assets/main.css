@@ -1,0 +1,91 @@
+body {
+  padding: 20px;
+  margin: 0;
+  background-color: var(--primary-color);
+  color: var(--secondary-color-5);
+  font-family: Inter, sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+  font-weight: 400;
+  user-select: none;
+  cursor: default;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+}
+
+.header-text {
+  font-size: 35.0;
+  padding-right: 1rem;
+  color: var(--secondary-color-1);
+}
+
+hr {
+  color: var(--secondary-color-3);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --dark: initial;
+    --light: ;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --dark: ;
+    --light: initial;
+  }
+}
+
+:root {
+  --primary-color: var(--dark, #0e191b) var(--light, #FDFAF6);
+  --primary-color-1: var(--dark, #334155) var(--light, #f8fafc);
+  --primary-color-2: var(--dark, #1f172a) var(--light, #ffffff);
+  --primary-color-3: var(--dark, #475569) var(--light, #f1f5f9);
+  --primary-color-4: var(--dark, #64748b) var(--light, #e4eFe7);
+  --primary-color-5: var(--dark, #94a3b8) var(--light, #f4fFf7);
+  --primary-color-6: var(--dark, #0b85a1) var(--light, #d8efe9);
+  --primary-color-7: var(--dark, #2ba5a1) var(--light, #64748b);
+
+  --secondary-color: var(--dark, #f8fafc) var(--light, #1e293b);
+  --secondary-color-1: var(--dark, #e2e8f0) var(--light, #e98C85);
+  --secondary-color-2: var(--dark, #cbd5e1) var(--light, #f99C95);
+  --secondary-color-3: var(--dark, #94a3b8) var(--light, #f9ccd5);
+  --secondary-color-4: var(--dark, #64748b) var(--light, #99BC85);
+  --secondary-color-5: var(--dark, #475569) var(--light, #7483a8);
+  --secondary-color-6: var(--dark, #334155) var(--light, #cbd5e1);
+
+  --focused-border-color: var(--dark, #3b82f6) var(--light, #2563eb);
+  --primary-success-color: var(--dark, #064e3b) var(--light, #d1fae5);
+  --secondary-success-color: var(--dark, #34d399) var(--light, #059669);
+  --primary-warning-color: var(--dark, #78350f) var(--light, #fef3c7);
+  --secondary-warning-color: var(--dark, #fbbf24) var(--light, #d97706);
+  --primary-error-color: var(--dark, #991b1b) var(--light, #fecaca);
+  --secondary-error-color: var(--dark, #ef4444) var(--light, #dc2626);
+  --contrast-error-color: var(--dark, var(--secondary-color-3)) var(--light, var(--primary-color));
+  --primary-info-color: var(--dark, #1e40af) var(--light, #dbeafe);
+  --secondary-info-color: var(--dark, #60a5fa) var(--light, #2563eb);
+}
+
+/* Modern browsers with `scrollbar-*` support */
+@supports (scrollbar-width: auto) {
+  :not(:hover) {
+    scrollbar-color: rgb(0 0 0 / 0%) rgb(0 0 0 / 0%);
+  }
+
+  :hover {
+    scrollbar-color: var(--secondary-color-2) rgb(0 0 0 / 0%);
+  }
+}
+
+/* Legacy browsers with `::-webkit-scrollbar-*` support */
+@supports selector(::-webkit-scrollbar) {
+  :root::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}

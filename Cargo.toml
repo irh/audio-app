@@ -1,0 +1,68 @@
+[workspace]
+members = [
+  "crates/*",
+  "projects/egui/app",
+  "projects/egui/ui",
+  "projects/egui/plugin",
+  "projects/egui/web",
+  "projects/iced/app",
+  "projects/vizia/app",
+  "projects/dioxus/app",
+  "xtask",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2024"
+authors = ["irh <ian.r.hobson@gmail.com>"]
+license = "MIT OR Apache-2.0"
+
+[workspace.dependencies]
+# Add support crates as workspace dependencies so that they can be referenced easily
+audio_module = { path = "crates/audio_module" }
+audio_stream = { path = "crates/audio_stream" }
+freeverb_module = { path = "crates/freeverb_module" }
+freeverb_plugin = { path = "crates/freeverb_plugin" }
+
+freeverb = "0.2.0"
+
+# Provides a convenient `Result` type
+anyhow = "1.0.100"
+# Loads environment variables from a local `.env` file
+dotenvy = "0.15.7"
+# eframe, an app framework for egui apps
+eframe = { version = "0.33.0", default-features = false, features = [
+  "default_fonts",
+] }
+# egui, should be kept in sync with eframe
+egui = "0.33.0"
+# A lightweight logging facade for Rust
+log = "0.4.28"
+# Bindings for all JS global objects and functions
+js-sys = "0.3.82"
+# More efficient and easy to use synchronization primitives
+parking_lot = "0.12.5"
+pretty_env_logger = "0.5.0"
+# A realtime-safe single-producer single-consumer ring buffer
+rtrb = "0.3.2"
+# Serialization + Deserialization
+serde = "1.0.228"
+# Array support for serde
+serde_arrays = "0.2.0"
+# wasm_bindgen support for serde
+serde-wasm-bindgen = "0.6.5"
+# derive(Error)
+thiserror = "2.0.17"
+# Easy support for interacting between JS and Rust.
+wasm-bindgen = "0.2.105"
+# Bridging the gap between Rust Futures and JavaScript Promises
+wasm-bindgen-futures = "0.4.55"
+# Bindings for all Web APIs
+web-sys = "0.3.82"
+
+# Using a fork of nih_plug to include support for egui 0.33
+nih_plug = { git = "https://github.com/irh/nih-plug.git", branch = "patches", default-features = false }
+nih_plug_egui = { git = "https://github.com/irh/nih-plug.git", branch = "patches" }
+nih_plug_xtask = { git = "https://github.com/irh/nih-plug.git", branch = "patches" }
+
+vizia = { git = "https://github.com/vizia/vizia", rev = "c0ada337a12f3b132d8f41203f6c0eda56ef33d7", default-features = false }

@@ -1,0 +1,19 @@
+[package]
+name = "web_egui"
+version = "0.1.0"
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+
+[lib]
+crate-type = ["cdylib"]
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+app_egui = { path = "../app" }
+audio_stream = {workspace = true}
+
+eframe = { workspace = true }
+log = "0.4.27"
+wasm-bindgen = { workspace = true }
+wasm-bindgen-futures = { workspace = true }
+web-sys = { workspace = true }

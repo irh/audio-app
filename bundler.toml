@@ -1,0 +1,5 @@
+[plugin]
+name = "Freeverb"
+
+[plugin_egui]
+name = "Freeverb"

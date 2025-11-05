@@ -1,0 +1,30 @@
+.toggle {
+  display: inline-flex;
+  width: fit-content;
+  min-width: 6rem;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  background-color: transparent;
+  color: var(--secondary-color-5);
+  font-size: 16px;
+  outline: solid;
+  outline-color: var(--secondary-color-2);
+}
+
+.toggle[data-state="on"] {
+  background-color: var(--primary-info-color);
+}
+
+.toggle:hover,
+.toggle:focus-visible {
+  background-color: var(--primary-color-5);
+  cursor: pointer;
+}
+
+.toggle[data-state="on"]:hover {
+  background-color: var(--primary-color-4);
+}
