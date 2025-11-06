@@ -148,6 +148,7 @@ impl App {
 }
 
 #[derive(Debug, Clone)]
+#[allow(clippy::large_enum_variant)]
 pub enum Message {
     SetEnabled(bool),
     SetFloat(FreeverbParameterId, f32),

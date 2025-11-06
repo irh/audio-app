@@ -7,6 +7,7 @@ use vizia::prelude::*;
 pub const UI_SIZE: (u32, u32) = (700, 450);
 
 #[derive(Debug, Clone)]
+#[allow(clippy::large_enum_variant)]
 pub enum Message {
     EnabledChanged,
     SetFloat(FreeverbParameterId, f32),

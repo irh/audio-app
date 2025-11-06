@@ -43,7 +43,7 @@ impl<M: AudioModule> AudioStream<M> {
 
         let input_device = host
             .default_input_device()
-            .ok_or_else(|| Error::DefaultDeviceUnavailable { stream: "input" })?;
+            .ok_or(Error::DefaultDeviceUnavailable { stream: "input" })?;
         let input_device_name = input_device.name()?;
         let input_config = input_device.default_input_config()?;
         let input_channels = input_config.channels() as usize;
@@ -55,7 +55,7 @@ impl<M: AudioModule> AudioStream<M> {
 
         let output_device = host
             .default_output_device()
-            .ok_or_else(|| Error::DefaultDeviceUnavailable { stream: "output" })?;
+            .ok_or(Error::DefaultDeviceUnavailable { stream: "output" })?;
         let output_device_name = output_device.name()?;
         let output_config = output_device.default_output_config()?;
         let output_channels = output_config.channels() as usize;

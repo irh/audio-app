@@ -41,7 +41,7 @@ fn App() -> Element {
         });
     }
 
-    let parameters = use_hook(|| FreeverbParameters::default());
+    let parameters = use_hook(FreeverbParameters::default);
 
     let mut audio_enabled = use_signal(|| false);
     use_effect(move || {
