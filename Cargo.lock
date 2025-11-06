@@ -3346,7 +3346,8 @@ name = "freeverb_plugin"
 version = "0.1.0"
 dependencies = [
  "audio_module",
- "freeverb",
+ "audio_stream",
+ "crossbeam-channel",
  "freeverb_module",
  "nih_plug",
  "serde",
@@ -6602,6 +6603,7 @@ name = "plugin_egui"
 version = "0.1.0"
 dependencies = [
  "audio_module",
+ "audio_stream",
  "freeverb_module",
  "freeverb_plugin",
  "nih_plug",

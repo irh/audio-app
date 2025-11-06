@@ -1,11 +1,11 @@
 use anyhow::Result;
-use audio_module::{PopMessage, PushMessage, ToProcessor};
+use audio_module::{PushMessage, ToProcessor};
 use audio_stream::AudioStream;
 use eframe::{
     Frame,
     egui::{self, Align, CentralPanel, Layout, RichText, TextStyle},
 };
-use freeverb_module::{FreeverbModule, FreeverbParameterId, FromFreeverb};
+use freeverb_module::{FreeverbModule, FreeverbParameterId};
 use ui_egui::{FreeverbUi, FreeverbUiState};
 
 pub struct App {
@@ -45,13 +45,7 @@ impl App {
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut Frame) {
         if let Some(from_processor) = self.audio_stream.as_ref().map(AudioStream::from_processor) {
-            while let Some(message) = from_processor.pop() {
-                match message {
-                    FromFreeverb::ScopeBuffer(buffer) => {
-                        self.ui_state.scope_frames.extend(buffer.iter())
-                    }
-                }
-            }
+            self.ui_state.receive_processor_messages(&from_processor);
         }
 
         CentralPanel::default().show(ctx, |ui| {
@@ -68,8 +62,10 @@ impl eframe::App for App {
 
             ui.separator();
 
-            let mut to_processor = self.audio_stream.as_ref().map(AudioStream::to_processor);
-            ui.add(FreeverbUi::new(&mut self.ui_state, &mut to_processor));
+            ui.add(FreeverbUi::new(
+                &mut self.ui_state,
+                self.audio_stream.as_ref().map(AudioStream::to_processor),
+            ));
         });
     }
 }

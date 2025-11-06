@@ -17,8 +17,9 @@ vst3 = ["nih_plug/vst3"]
 
 [dependencies]
 audio_module = { workspace = true }
+audio_stream = { workspace = true }
+crossbeam-channel = { workspace = true }
 freeverb_module = { workspace = true }
 
-freeverb = { workspace = true }
 nih_plug = { workspace = true }
 serde = { workspace = true, features = ["derive"] }

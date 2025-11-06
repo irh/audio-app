@@ -1,13 +1,13 @@
 use audio_module::{FloatParameter, Parameter, PushMessage, ToProcessor};
 use egui::{self, Response, Ui, Widget};
 
-pub struct FloatSlider<'a, T: PushMessage> {
+pub struct FloatSlider<'a, T: PushMessage<ToProcessor>> {
     parameter: &'a mut FloatParameter,
-    to_processor: &'a mut Option<T>,
+    to_processor: &'a Option<T>,
 }
 
-impl<'a, T: PushMessage> FloatSlider<'a, T> {
-    pub fn new(parameter: &'a mut FloatParameter, to_processor: &'a mut Option<T>) -> Self {
+impl<'a, T: PushMessage<ToProcessor>> FloatSlider<'a, T> {
+    pub fn new(parameter: &'a mut FloatParameter, to_processor: &'a Option<T>) -> Self {
         Self {
             parameter,
             to_processor,
@@ -15,7 +15,7 @@ impl<'a, T: PushMessage> FloatSlider<'a, T> {
     }
 }
 
-impl<'a, T: PushMessage> Widget for FloatSlider<'a, T> {
+impl<'a, T: PushMessage<ToProcessor>> Widget for FloatSlider<'a, T> {
     fn ui(self, ui: &mut Ui) -> Response {
         ui.vertical(|ui| {
             let value_converter = self.parameter.value_converter();

@@ -179,14 +179,14 @@ impl<M: AudioModule> AudioStream<M> {
         })
     }
 
-    pub fn to_processor(&self) -> ProcessorSender {
-        ProcessorSender {
+    pub fn to_processor(&self) -> ToProcessorSender {
+        ToProcessorSender {
             processor_node: self.state.processor_node.clone(),
         }
     }
 
-    pub fn from_processor(&self) -> ProcessorReceiver<M::Processor> {
-        ProcessorReceiver {
+    pub fn from_processor(&self) -> FromProcessorReceiver<M::Processor> {
+        FromProcessorReceiver {
             message_receiver: self.state.message_receiver.clone(),
             _processor: PhantomData,
         }
@@ -213,12 +213,12 @@ impl<M> Drop for AudioStream<M> {
 }
 
 #[derive(Clone)]
-pub struct ProcessorSender {
+pub struct ToProcessorSender {
     processor_node: AudioWorkletNode,
 }
 
-impl PushMessage for ProcessorSender {
-    fn push(&self, message: ToProcessor) {
+impl PushMessage<ToProcessor> for ToProcessorSender {
+    fn push(&self, message: ToProcessor) -> bool {
         match message {
             ToProcessor::SetParameter(id, value) => match self.processor_node.port() {
                 Ok(port) => {
@@ -227,22 +227,28 @@ impl PushMessage for ProcessorSender {
                     Reflect::set(&message, &"value".into(), &value.into()).ok();
                     if let Err(error) = port.post_message(&message) {
                         console::error_1(&error);
+                        false
+                    } else {
+                        true
                     }
                 }
-                Err(error) => console::error_1(&error),
+                Err(error) => {
+                    console::error_1(&error);
+                    false
+                }
             },
-            _ => {}
+            _ => true,
         }
     }
 }
 
 #[derive(Clone)]
-pub struct ProcessorReceiver<P> {
+pub struct FromProcessorReceiver<P> {
     message_receiver: Receiver<JsValue>,
     _processor: PhantomData<P>,
 }
 
-impl<P> PopMessage<P::OutputMessage> for ProcessorReceiver<P>
+impl<P> PopMessage<P::OutputMessage> for FromProcessorReceiver<P>
 where
     P: AudioProcessor,
     P::OutputMessage: for<'de> Deserialize<'de>,

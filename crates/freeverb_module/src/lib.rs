@@ -3,7 +3,7 @@ mod wasm;
 
 use audio_module::{
     AudioModule, AudioProcessor, BoolParameter, FloatParameter, Parameters, PercentStringConverter,
-    ToProcessor,
+    PopMessage, PushMessage, ToProcessor,
 };
 use audio_stream::FRAMES_PER_BUFFER;
 use freeverb::{Float, Freeverb};
@@ -128,10 +128,6 @@ impl<T: Float> FreeverbProcessor<T> {
             scope_enabled: false,
         }
     }
-}
-
-impl<T: Float> AudioProcessor for FreeverbProcessor<T> {
-    type OutputMessage = FromFreeverb;
 
     fn receive_message(&mut self, message: ToProcessor) {
         match message {
@@ -169,22 +165,28 @@ impl<T: Float> AudioProcessor for FreeverbProcessor<T> {
             ToProcessor::EndEdit(_) => {}
         }
     }
+}
 
-    fn process_frame(&mut self, input: (f32, f32)) -> (f32, f32) {
-        let input = (input.0.into(), input.1.into());
-        let (out_left, out_right) = self.freeverb.tick(input);
-        (out_left.to_f32(), out_right.to_f32())
-    }
+impl<T: Float> AudioProcessor for FreeverbProcessor<T> {
+    type OutputMessage = FromFreeverb;
 
-    fn process_buffer(
+    fn process_buffer<To, From>(
         &mut self,
         buffer: &mut [f32],
         channels: usize,
-        mut on_output_message: impl FnMut(FromFreeverb),
-    ) {
+        to_processor: &To,
+        from_processor: &From,
+    ) where
+        To: PopMessage<ToProcessor>,
+        From: PushMessage<Self::OutputMessage>,
+    {
         debug_assert_eq!(channels, 2);
         let (frames, remainder) = buffer.as_chunks_mut::<2>();
         debug_assert_eq!(remainder.len(), 0);
+
+        while let Some(message) = to_processor.pop() {
+            self.receive_message(message);
+        }
 
         if self.scope_enabled {
             let mut scope_buffer = [(0.0, 0.0); FRAMES_PER_BUFFER];
@@ -198,7 +200,7 @@ impl<T: Float> AudioProcessor for FreeverbProcessor<T> {
                 *scope_frame = (process_frame[0], process_frame[1]);
             }
 
-            (on_output_message)(FromFreeverb::ScopeBuffer(scope_buffer))
+            from_processor.push(FromFreeverb::ScopeBuffer(scope_buffer));
         } else {
             for frame in frames.iter_mut() {
                 let (out_left, out_right) =

@@ -8,7 +8,7 @@ license.workspace = true
 [dependencies]
 audio_module = { workspace = true }
 
-crossbeam-channel = "0.5.15"
+crossbeam-channel = { workspace = true }
 thiserror = { workspace = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
