@@ -16,16 +16,15 @@ body {
   justify-content: space-between;
   align-items: center;
   padding-bottom: 1rem;
+  max-width: 300px;
+  border-bottom: solid 1px;
+  border-bottom-color: var(--secondary-color-3);
 }
 
 .header-text {
   font-size: 35.0;
   padding-right: 1rem;
   color: var(--secondary-color-1);
-}
-
-hr {
-  color: var(--secondary-color-3);
 }
 
 @media (prefers-color-scheme: dark) {

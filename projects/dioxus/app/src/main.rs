@@ -77,8 +77,6 @@ fn App() -> Element {
             }
         }
 
-        hr {}
-
         ParameterSlider { parameter: parameters.dampening }
         ParameterSlider { parameter: parameters.width }
         ParameterSlider { parameter: parameters.room_size }
