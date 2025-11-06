@@ -16,8 +16,8 @@ pub const FRAMES_PER_BUFFER: usize = 1024;
 
 #[allow(unused)]
 pub struct AudioStream<M: AudioModule> {
-    to_processor: Sender<ToProcessor>,
-    from_processor: Receiver<<M::Processor as AudioProcessor>::OutputMessage>,
+    to_processor: ToProcessorSender,
+    from_processor: FromProcessorReceiver<M::Processor>,
     output_stream: cpal::Stream,
     input_stream: cpal::Stream,
     sample_rate: usize,
@@ -31,10 +31,14 @@ impl<M: AudioModule> AudioStream<M> {
         }
 
         let channel_capacity = 1024;
-        let (to_processor_sender, to_processor_receiver) =
-            crossbeam_channel::bounded(channel_capacity);
-        let (from_processor_sender, from_processor_receiver) =
-            crossbeam_channel::bounded(channel_capacity);
+
+        let (sender, receiver) = crossbeam_channel::bounded(channel_capacity);
+        let to_processor_sender = ToProcessorSender(sender);
+        let to_processor_receiver = ToProcessorReceiver(receiver);
+
+        let (sender, receiver) = crossbeam_channel::bounded(channel_capacity);
+        let from_processor_sender = FromProcessorSender::<M::Processor>(sender);
+        let from_processor_receiver = FromProcessorReceiver(receiver);
 
         const CHANNELS: usize = 2;
         const SAMPLES_PER_BUFFER: usize = FRAMES_PER_BUFFER * CHANNELS;
@@ -100,13 +104,13 @@ impl<M: AudioModule> AudioStream<M> {
                         buffer_frame.fill(*sample);
                     }
 
-                    while let Ok(message) = to_processor_receiver.try_recv() {
-                        processor.receive_message(message);
-                    }
+                    processor.process_buffer(
+                        &mut input_buffer,
+                        CHANNELS,
+                        &to_processor_receiver,
+                        &from_processor_sender,
+                    );
 
-                    processor.process_buffer(&mut input_buffer, CHANNELS, |message| {
-                        from_processor_sender.send(message).ok();
-                    });
                     to_output.push_interleaved(&input_buffer);
                 },
                 move |err| error!("Error on audio input stream: {}", err),
@@ -119,13 +123,13 @@ impl<M: AudioModule> AudioStream<M> {
                         *buffer_sample = *input_sample;
                     }
 
-                    while let Ok(message) = to_processor_receiver.try_recv() {
-                        processor.receive_message(message);
-                    }
+                    processor.process_buffer(
+                        &mut input_buffer,
+                        CHANNELS,
+                        &to_processor_receiver,
+                        &from_processor_sender,
+                    );
 
-                    processor.process_buffer(&mut input_buffer, CHANNELS, |message| {
-                        from_processor_sender.send(message).ok();
-                    });
                     to_output.push_interleaved(&input_buffer);
                 },
                 move |err| error!("Error on audio input stream: {}", err),
@@ -145,13 +149,13 @@ impl<M: AudioModule> AudioStream<M> {
                         }
                     }
 
-                    while let Ok(message) = to_processor_receiver.try_recv() {
-                        processor.receive_message(message);
-                    }
+                    processor.process_buffer(
+                        &mut input_buffer,
+                        CHANNELS,
+                        &to_processor_receiver,
+                        &from_processor_sender,
+                    );
 
-                    processor.process_buffer(&mut input_buffer, CHANNELS, |message| {
-                        from_processor_sender.send(message).ok();
-                    });
                     to_output.push_interleaved(&input_buffer);
                 },
                 move |err| error!("Error on audio input stream: {}", err),
@@ -272,12 +276,12 @@ Audio stream started:
         })
     }
 
-    pub fn to_processor(&self) -> ProcessorSender {
-        ProcessorSender(self.to_processor.clone())
+    pub fn to_processor(&self) -> ToProcessorSender {
+        self.to_processor.clone()
     }
 
-    pub fn from_processor(&self) -> ProcessorReceiver<M::Processor> {
-        ProcessorReceiver(self.from_processor.clone())
+    pub fn from_processor(&self) -> FromProcessorReceiver<M::Processor> {
+        self.from_processor.clone()
     }
 
     pub fn sample_rate(&self) -> usize {
@@ -285,37 +289,74 @@ Audio stream started:
     }
 }
 
-/// An implementation of [PushMessage] that wraps a crossbeam_channel sender.
+/// An implementation of [PushMessage] that sends messages to [ToProcessorReceiver].
 #[derive(Clone)]
-pub struct ProcessorSender(Sender<ToProcessor>);
+pub struct ToProcessorSender(Sender<ToProcessor>);
 
-impl ProcessorSender {
+impl ToProcessorSender {
     pub fn new(sender: Sender<ToProcessor>) -> Self {
         Self(sender)
     }
 }
 
-impl PushMessage for ProcessorSender {
-    fn push(&self, command: ToProcessor) {
-        if self.0.send(command).is_err() {
-            error!("Channel is disconnected");
-        }
+impl PushMessage<ToProcessor> for ToProcessorSender {
+    fn push(&self, message: ToProcessor) -> bool {
+        self.0.try_send(message).is_ok()
+    }
+}
+
+/// An implementation of [PopMessage] that gets passed into the processor.
+///
+/// Receives messages from [ToProcessorSender].
+#[derive(Clone)]
+pub struct ToProcessorReceiver(Receiver<ToProcessor>);
+
+impl ToProcessorReceiver {
+    pub fn new(receiver: Receiver<ToProcessor>) -> Self {
+        Self(receiver)
+    }
+}
+
+impl PopMessage<ToProcessor> for ToProcessorReceiver {
+    fn pop(&self) -> Option<ToProcessor> {
+        self.0.try_recv().ok()
+    }
+}
+
+/// An implementation of [PushMessage] that sends messages to [FromProcessorReceiver].
+#[derive(Clone)]
+pub struct FromProcessorSender<P: AudioProcessor>(Sender<P::OutputMessage>);
+
+impl<P: AudioProcessor> FromProcessorSender<P> {
+    pub fn new(sender: Sender<P::OutputMessage>) -> Self {
+        Self(sender)
+    }
+}
+
+impl<P: AudioProcessor> PushMessage<P::OutputMessage> for FromProcessorSender<P> {
+    fn push(&self, message: P::OutputMessage) -> bool {
+        self.0.try_send(message).is_ok()
     }
 }
 
 /// An implementation of [PopMessage] that wraps a crossbeam_channel receiver.
-#[derive(Clone)]
-pub struct ProcessorReceiver<P: AudioProcessor>(Receiver<P::OutputMessage>);
+pub struct FromProcessorReceiver<P: AudioProcessor>(Receiver<P::OutputMessage>);
 
-impl<P: AudioProcessor> ProcessorReceiver<P> {
+impl<P: AudioProcessor> FromProcessorReceiver<P> {
     pub fn new(receiver: Receiver<P::OutputMessage>) -> Self {
         Self(receiver)
     }
 }
 
-impl<P: AudioProcessor> PopMessage<P::OutputMessage> for ProcessorReceiver<P> {
+impl<P: AudioProcessor> PopMessage<P::OutputMessage> for FromProcessorReceiver<P> {
     fn pop(&self) -> Option<P::OutputMessage> {
         self.0.try_recv().ok()
+    }
+}
+
+impl<P: AudioProcessor> Clone for FromProcessorReceiver<P> {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
     }
 }
 

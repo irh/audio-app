@@ -15,6 +15,7 @@ vst3 = ["freeverb_plugin/vst3"]
 
 [dependencies]
 audio_module = { workspace = true }
+audio_stream = { workspace = true }
 freeverb_module = { workspace = true }
 freeverb_plugin = { workspace = true }
 ui_egui = { path = "../ui" }

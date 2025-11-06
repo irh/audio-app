@@ -1,14 +1,15 @@
-use crate::ToProcessor;
+use crate::{PopMessage, PushMessage, ToProcessor};
 
-pub trait AudioProcessor: Sized + Send + Sync + 'static {
+pub trait AudioProcessor: Sized + Send + 'static {
     type OutputMessage: Send;
 
-    fn process_frame(&mut self, input: (f32, f32)) -> (f32, f32);
-    fn process_buffer(
+    fn process_buffer<To, From>(
         &mut self,
         buffer: &mut [f32],
         channels: usize,
-        on_output_message: impl FnMut(Self::OutputMessage),
-    );
-    fn receive_message(&mut self, command: ToProcessor);
+        to_processor: &To,
+        from_processor: &From,
+    ) where
+        To: PopMessage<ToProcessor>,
+        From: PushMessage<Self::OutputMessage>;
 }

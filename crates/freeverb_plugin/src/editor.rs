@@ -1,6 +1,9 @@
 use audio_module::{PushMessage, ToProcessor};
+use audio_stream::{FromProcessorReceiver, ToProcessorSender};
+use freeverb_module::FreeverbProcessor;
 use nih_plug::{params::persist::PersistentField, prelude::*};
 use serde::{Deserialize, Serialize};
+use std::sync::{Arc, atomic::AtomicUsize};
 
 use crate::{Freeverb, FreeverbParams, ParameterVisitor, PlainFromF32};
 
@@ -8,21 +11,31 @@ pub trait FreeverbEditor: Send + Sized + 'static {
     type EditorState: Send + Sync + Serialize + for<'de> Deserialize<'de>;
     type StateField: for<'de> PersistentField<'de, Self::EditorState>;
 
-    fn make_editor(freeverb: &Freeverb<Self>) -> Option<Box<dyn Editor>>;
+    fn make_editor(
+        freeverb: &Freeverb<Self>,
+        sample_rate: Arc<AtomicUsize>,
+        to_processor: ToProcessorSender,
+        from_processor: FromProcessorReceiver<FreeverbProcessor>,
+    ) -> Option<Box<dyn Editor>>;
     fn make_editor_state() -> Self::StateField;
 }
 
 pub trait FreeverbEditorState: Send + Sync + Serialize + for<'de> Deserialize<'de> {}
 
-/// Used for when no editor is needed.
+/// Used when no editor is required.
 pub struct NoEditor;
 
 impl FreeverbEditor for NoEditor {
     type EditorState = NoEditorState;
     type StateField = NoEditorState;
 
-    fn make_editor(_freeverb: &Freeverb<Self>) -> Option<Box<dyn Editor>> {
-        None
+    fn make_editor(
+        _freeverb: &Freeverb<Self>,
+        _sample_rate: Arc<AtomicUsize>,
+        _to_processor: ToProcessorSender,
+        _from_processor: FromProcessorReceiver<FreeverbProcessor>,
+    ) -> Option<Box<dyn Editor>> {
+        todo!()
     }
 
     fn make_editor_state() -> Self::EditorState {
@@ -44,19 +57,20 @@ impl<'a> PersistentField<'a, NoEditorState> for NoEditorState {
     }
 }
 
-pub struct CommandSetter<'a, 'b, E: FreeverbEditor> {
+/// An implementation of [PushMessage<ToProcessor>] that handles messages for a [ParamSetter].
+pub struct ToProcessorForParams<'a, 'b, E: FreeverbEditor> {
     setter: &'a ParamSetter<'b>,
     params: &'a FreeverbParams<E>,
 }
 
-impl<'a, 'b, E: FreeverbEditor> CommandSetter<'a, 'b, E> {
+impl<'a, 'b, E: FreeverbEditor> ToProcessorForParams<'a, 'b, E> {
     pub fn new(setter: &'a ParamSetter<'b>, params: &'a FreeverbParams<E>) -> Self {
         Self { setter, params }
     }
 }
 
-impl<'a, 'b, E: FreeverbEditor> PushMessage for CommandSetter<'a, 'b, E> {
-    fn push(&self, command: ToProcessor) {
+impl<'a, 'b, E: FreeverbEditor> PushMessage<ToProcessor> for ToProcessorForParams<'a, 'b, E> {
+    fn push(&self, command: ToProcessor) -> bool {
         match command {
             ToProcessor::BeginEdit(id) => self
                 .params
@@ -72,6 +86,7 @@ impl<'a, 'b, E: FreeverbEditor> PushMessage for CommandSetter<'a, 'b, E> {
                 .params
                 .visit_parameter(id, &EndEditVisitor(self.setter)),
         }
+        true
     }
 }
 

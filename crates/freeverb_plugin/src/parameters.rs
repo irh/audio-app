@@ -1,3 +1,7 @@
+use std::sync::Arc;
+
+use audio_module::{BoolParameter, FloatParameter, Parameter, PushMessage, ToProcessor};
+use audio_stream::ToProcessorSender;
 use freeverb_module::{FreeverbParameterId, FreeverbParameters};
 use nih_plug::{
     formatters::{s2v_f32_percentage, v2s_f32_percentage},
@@ -20,23 +24,22 @@ pub struct FreeverbParams<E: FreeverbEditor> {
     pub dry: FloatParam,
     #[id = "wet"]
     pub wet: FloatParam,
-    #[id = "scope"]
-    pub scope_enabled: BoolParam,
 
     #[persist = "editor-state"]
     pub editor_state: E::StateField,
 }
 
-impl<E: FreeverbEditor> Default for FreeverbParams<E> {
-    fn default() -> Self {
+impl<E: FreeverbEditor> FreeverbParams<E> {
+    pub fn new(to_processor: ToProcessorSender) -> Self {
+        let params = FreeverbParameters::default();
+
         Self {
-            dampening: percent_parameter("Dampening", 0.5),
-            width: percent_parameter("Width", 1.0),
-            room_size: percent_parameter("Room Size", 0.5),
-            freeze: BoolParam::new("Freeze", false),
-            dry: percent_parameter("Dry", 0.0),
-            wet: percent_parameter("Wet", 1.0 / 3.0),
-            scope_enabled: BoolParam::new("Scope", true),
+            dampening: percent_parameter(params.dampening, to_processor.clone()),
+            width: percent_parameter(params.width, to_processor.clone()),
+            room_size: percent_parameter(params.room_size, to_processor.clone()),
+            freeze: bool_parameter(params.freeze, to_processor.clone()),
+            dry: percent_parameter(params.dry, to_processor.clone()),
+            wet: percent_parameter(params.wet, to_processor.clone()),
 
             editor_state: E::make_editor_state(),
         }
@@ -56,7 +59,7 @@ impl<E: FreeverbEditor> FreeverbParams<E> {
             FreeverbParameterId::Freeze => visitor.visit(&self.freeze),
             FreeverbParameterId::Dry => visitor.visit(&self.dry),
             FreeverbParameterId::Wet => visitor.visit(&self.wet),
-            FreeverbParameterId::Scope => visitor.visit(&self.scope_enabled),
+            FreeverbParameterId::Scope => {}
         }
     }
 
@@ -67,7 +70,6 @@ impl<E: FreeverbEditor> FreeverbParams<E> {
         ui_params.freeze.value = self.freeze.value();
         ui_params.dry.value = self.dry.value();
         ui_params.wet.value = self.wet.value();
-        ui_params.scope.value = self.scope_enabled.value();
     }
 }
 
@@ -91,9 +93,30 @@ impl PlainFromF32 for bool {
     }
 }
 
-fn percent_parameter(name: impl Into<String>, default: f32) -> FloatParam {
-    FloatParam::new(name, default, FloatRange::Linear { min: 0.0, max: 1.0 })
-        .with_value_to_string(v2s_f32_percentage(2))
-        .with_string_to_value(s2v_f32_percentage())
-        .with_unit("%")
+fn percent_parameter(param: FloatParameter, to_processor: ToProcessorSender) -> FloatParam {
+    let id = param.id();
+
+    FloatParam::new(
+        param.name().to_string(),
+        param.default_user_value(),
+        FloatRange::Linear {
+            min: param.value_converter().min(),
+            max: param.value_converter().max(),
+        },
+    )
+    .with_value_to_string(v2s_f32_percentage(2))
+    .with_string_to_value(s2v_f32_percentage())
+    .with_unit("%")
+    .with_callback(Arc::new(move |value| {
+        to_processor.push(ToProcessor::SetParameter(id, value));
+    }))
+}
+
+fn bool_parameter(param: BoolParameter, to_processor: ToProcessorSender) -> BoolParam {
+    let id = param.id();
+    BoolParam::new(param.name().to_string(), param.default_user_value() != 0.0).with_callback(
+        Arc::new(move |value| {
+            to_processor.push(ToProcessor::SetParameter(id, if value { 1.0 } else { 0.0 }));
+        }),
+    )
 }

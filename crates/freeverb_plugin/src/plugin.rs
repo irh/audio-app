@@ -1,18 +1,54 @@
 use crate::{FreeverbEditor, FreeverbParams};
+use audio_module::AudioProcessor;
+use audio_stream::{
+    FromProcessorReceiver, FromProcessorSender, ToProcessorReceiver, ToProcessorSender,
+};
+use freeverb_module::FreeverbProcessor;
 use nih_plug::prelude::*;
-use std::{marker::PhantomData, sync::Arc};
+use std::{
+    marker::PhantomData,
+    sync::{
+        Arc,
+        atomic::{AtomicUsize, Ordering},
+    },
+};
 
 pub struct Freeverb<E: FreeverbEditor> {
     pub params: Arc<FreeverbParams<E>>,
-    freeverb: Option<freeverb::Freeverb<f32>>,
+    to_processor_sender: ToProcessorSender,
+    to_processor_receiver: ToProcessorReceiver,
+    from_processor_sender: FromProcessorSender<FreeverbProcessor>,
+    from_processor_receiver: FromProcessorReceiver<FreeverbProcessor>,
+    initialized: Option<InitializedState>,
+    sample_rate: Arc<AtomicUsize>,
     _editor: PhantomData<E>,
+}
+
+struct InitializedState {
+    processor: FreeverbProcessor,
+    process_buffer: Vec<f32>,
 }
 
 impl<E: FreeverbEditor> Default for Freeverb<E> {
     fn default() -> Self {
+        let channel_capacity = 1024;
+
+        let (sender, receiver) = crossbeam_channel::bounded(channel_capacity);
+        let to_processor_sender = ToProcessorSender::new(sender);
+        let to_processor_receiver = ToProcessorReceiver::new(receiver);
+
+        let (sender, receiver) = crossbeam_channel::bounded(channel_capacity);
+        let from_processor_sender = FromProcessorSender::new(sender);
+        let from_processor_receiver = FromProcessorReceiver::new(receiver);
+
         Self {
-            params: Arc::new(FreeverbParams::default()),
-            freeverb: None,
+            params: Arc::new(FreeverbParams::new(to_processor_sender.clone())),
+            to_processor_sender,
+            to_processor_receiver,
+            from_processor_sender,
+            from_processor_receiver,
+            initialized: None,
+            sample_rate: Arc::default(),
             _editor: PhantomData,
         }
     }
@@ -38,7 +74,12 @@ impl<E: FreeverbEditor> Plugin for Freeverb<E> {
     }
 
     fn editor(&mut self, _async_executor: AsyncExecutor<Self>) -> Option<Box<dyn Editor>> {
-        E::make_editor(self)
+        E::make_editor(
+            self,
+            self.sample_rate.clone(),
+            self.to_processor_sender.clone(),
+            self.from_processor_receiver.clone(),
+        )
     }
 
     fn initialize(
@@ -47,34 +88,49 @@ impl<E: FreeverbEditor> Plugin for Freeverb<E> {
         buffer_config: &BufferConfig,
         _context: &mut impl InitContext<Self>,
     ) -> bool {
-        self.freeverb = Some(freeverb::Freeverb::new(buffer_config.sample_rate as usize));
+        let sample_rate = buffer_config.sample_rate as usize;
+        self.initialized = Some(InitializedState {
+            processor: FreeverbProcessor::new(sample_rate),
+            process_buffer: vec![0.0; buffer_config.max_buffer_size as usize * 2],
+        });
+
+        self.sample_rate.store(sample_rate, Ordering::Relaxed);
+
         true
     }
 
     fn process(
         &mut self,
-        buffer: &mut Buffer,
+        host_buffers: &mut Buffer,
         _aux: &mut AuxiliaryBuffers,
         _context: &mut impl ProcessContext<Self>,
     ) -> ProcessStatus {
-        let Some(freeverb) = &mut self.freeverb else {
+        let Some(InitializedState {
+            processor,
+            process_buffer,
+            ..
+        }) = &mut self.initialized
+        else {
             return ProcessStatus::Error("Uninitialized");
         };
 
-        freeverb.set_dampening(self.params.dampening.value());
-        freeverb.set_width(self.params.width.value());
-        freeverb.set_room_size(self.params.room_size.value());
-        freeverb.set_freeze(self.params.freeze.value());
-        freeverb.set_dry(self.params.dry.value());
-        freeverb.set_wet(self.params.wet.value());
+        // Interleave the contents of the host buffers into the process buffer
+        process_buffer.clear();
+        process_buffer.extend(host_buffers.iter_samples().flatten().map(|sample| *sample));
 
-        for mut frame in buffer.iter_samples() {
-            let mut samples = frame.iter_mut();
-            let left = samples.next().unwrap();
-            let right = samples.next().unwrap();
-            let (out_left, out_right) = freeverb.tick((*left, *right));
-            *left = out_left;
-            *right = out_right;
+        processor.process_buffer(
+            process_buffer,
+            2,
+            &self.to_processor_receiver,
+            &self.from_processor_sender,
+        );
+
+        // Deinterleave the process buffer into the host buffers
+        for (processed_sample, host_sample) in process_buffer
+            .iter()
+            .zip(host_buffers.iter_samples().flatten())
+        {
+            *host_sample = *processed_sample;
         }
 
         ProcessStatus::KeepAlive

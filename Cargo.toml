@@ -28,6 +28,8 @@ freeverb = "0.2.0"
 
 # Provides a convenient `Result` type
 anyhow = "1.0.100"
+# Multi-producer multi-consumer channels for message passing
+crossbeam-channel = "0.5.15"
 # Loads environment variables from a local `.env` file
 dotenvy = "0.15.7"
 # eframe, an app framework for egui apps
