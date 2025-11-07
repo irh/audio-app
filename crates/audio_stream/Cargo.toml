@@ -13,8 +13,8 @@ thiserror = { workspace = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 audio_thread_priority = "0.34.0"
-# Using the latest version to pull in iOS fixes landed since 0.16
-cpal = { git = "https://github.com/RustAudio/cpal" }
+# Pull in iOS fixes landed since 0.16
+cpal = { git = "https://github.com/RustAudio/cpal", rev = "a8269d3c993f7d375d4655b53d3437429d4f6bd8" }
 log = { workspace = true }
 # An easy to use crate for resampling at a fixed ratio
 fixed-resample = "0.9.2"
