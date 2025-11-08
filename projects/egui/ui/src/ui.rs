@@ -18,7 +18,6 @@ impl FreeverbUiState {
             match message {
                 FromFreeverb::ScopeBuffer(buffer) => {
                     self.scope_frames.extend(buffer.iter());
-                    dbg!(self.scope_frames.len());
 
                     // Keep the most recent N frames
                     let scope_tail_duration = 0.2;
