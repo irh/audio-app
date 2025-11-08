@@ -12,6 +12,23 @@ type FreeverbStream = AudioStream<FreeverbModule>;
 static AUDIO_STREAM: GlobalSignal<Option<Arc<FreeverbStream>>> = Signal::global(|| None);
 
 fn main() {
+    dioxus::logger::initialize_default();
+
+    #[cfg(target_os = "android")]
+    {
+        android_logger::init_once(
+            android_logger::Config::default()
+                .with_max_level(log::LevelFilter::Debug) // limit log level
+                .with_tag("freeverb") // logs will show under mytag tag
+                .with_filter(
+                    // configure messages for specific crate
+                    android_logger::FilterBuilder::new()
+                        .parse("debug,hello::crate=error")
+                        .build(),
+                ),
+        );
+    }
+
     dioxus::LaunchBuilder::new()
         .with_cfg(desktop! {
             use dioxus::desktop::{Config, LogicalSize, WindowBuilder};
