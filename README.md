@@ -18,11 +18,11 @@ Each app should:
 
 Supporting crates used by the various app projects.
 
-### [`projects/`](./projects)
+### [`apps/`](./apps)
 
-The `projects/` directory contains subdirectories for each framework.
+The `apps/` directory contains subdirectories for each framework.
 
-See each project's `README.md` for more information.
+See each app's `README.md` for more information.
 
 ### [`xtask/`](./xtask)
 
