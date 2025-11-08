@@ -1,0 +1,4 @@
+# .git-blame-ignore-revs
+
+# Rename /projects -> /apps
+98e92074abedf3c51038e51454209f6d93caa6b5
