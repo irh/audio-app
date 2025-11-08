@@ -7,7 +7,9 @@ use cpal::{
     traits::{DeviceTrait, HostTrait, StreamTrait},
 };
 use crossbeam_channel::{Receiver, Sender};
-use fixed_resample::{ReadStatus, ResampleQuality, ResamplingChannelConfig, resampling_channel};
+use fixed_resample::{
+    PushStatus, ReadStatus, ResampleQuality, ResamplingChannelConfig, resampling_channel,
+};
 use log::{debug, error, info};
 use std::num::NonZeroUsize;
 use thiserror::Error;
@@ -49,7 +51,13 @@ impl<M: AudioModule> AudioStream<M> {
             .default_input_device()
             .ok_or(Error::DefaultDeviceUnavailable { stream: "input" })?;
         let input_device_name = input_device.name()?;
+        for (i, config) in input_device.supported_input_configs().unwrap().enumerate() {
+            debug!("input config {i}: {config:?}");
+        }
+
         let input_config = input_device.default_input_config()?;
+
+        debug!("default input config: {input_config:?}");
         let input_channels = input_config.channels() as usize;
         let input_sample_rate = input_config.sample_rate().0;
         let input_buffer_size = match input_config.buffer_size() {
@@ -61,7 +69,16 @@ impl<M: AudioModule> AudioStream<M> {
             .default_output_device()
             .ok_or(Error::DefaultDeviceUnavailable { stream: "output" })?;
         let output_device_name = output_device.name()?;
+        for (i, config) in output_device
+            .supported_output_configs()
+            .unwrap()
+            .enumerate()
+        {
+            debug!("output config {i}: {config:?}");
+        }
+
         let output_config = output_device.default_output_config()?;
+        debug!("default output config: {output_config:?}");
         let output_channels = output_config.channels() as usize;
         let output_sample_rate = output_config.sample_rate().0;
         let output_buffer_size = match output_config.buffer_size() {
@@ -76,16 +93,30 @@ impl<M: AudioModule> AudioStream<M> {
         };
         debug!("Setting up input stream with config: {input_stream_config:?}");
 
-        let mut input_buffer = [0.0f32; SAMPLES_PER_BUFFER];
+        let input_buffer_duration = (input_buffer_size as f64) / (input_sample_rate as f64);
+        let output_buffer_duration = (output_buffer_size as f64) / (output_sample_rate as f64);
+        debug!("input buffer duration: {input_buffer_duration}, output: {output_buffer_duration}");
+
+        let latency_seconds = input_buffer_duration;
+        let capacity_seconds = input_buffer_duration.max(output_buffer_duration) * 2.0;
+        debug!("latency: {latency_seconds}, capacity: {capacity_seconds}");
+
+        let mut input_buffer = vec![0.0; input_buffer_size as usize * 2];
         let (mut to_output, mut from_input) = resampling_channel::<f32, 2>(
             NonZeroUsize::new(2).unwrap(),
             input_sample_rate,
             output_sample_rate,
             ResamplingChannelConfig {
+                latency_seconds,
+                capacity_seconds,
                 quality: ResampleQuality::Low,
                 ..Default::default()
             },
         );
+
+        // for _ in 0..input_buffer_size {
+        //     to_output.push(input, input_range)
+        // }
 
         let mut processor = M::create_processor(input_sample_rate as usize);
 
@@ -119,6 +150,8 @@ impl<M: AudioModule> AudioStream<M> {
             2 => input_device.build_input_stream(
                 &input_stream_config,
                 move |data: &[f32], _info: &cpal::InputCallbackInfo| {
+                    info!("input data.len(): {} ", data.len());
+
                     for (input_sample, buffer_sample) in data.iter().zip(input_buffer.iter_mut()) {
                         *buffer_sample = *input_sample;
                     }
@@ -130,7 +163,22 @@ impl<M: AudioModule> AudioStream<M> {
                         &from_processor_sender,
                     );
 
-                    to_output.push_interleaved(&input_buffer);
+                    match to_output.push_interleaved(&input_buffer) {
+                        PushStatus::Ok => {}
+                        PushStatus::OutputNotReady => {
+                            error!("Failed to push input buffer, output not ready")
+                        }
+                        PushStatus::OverflowOccurred { num_frames_pushed } => {
+                            error!("Input push error, overflow occurred ({num_frames_pushed})");
+                        }
+                        PushStatus::UnderflowCorrected {
+                            num_zero_frames_pushed,
+                        } => {
+                            error!(
+                                "Input push error, underflow occurred ({num_zero_frames_pushed})"
+                            );
+                        }
+                    }
                 },
                 move |err| error!("Error on audio input stream: {}", err),
                 None,
@@ -170,7 +218,7 @@ impl<M: AudioModule> AudioStream<M> {
         };
         debug!("Setting up output stream with config: {output_stream_config:?}");
 
-        let mut output_buffer = [0.0f32; SAMPLES_PER_BUFFER];
+        let mut output_buffer = vec![0.0; output_buffer_size as usize * 2];
         let output_stream = match output_channels {
             0 => {
                 return Err(Error::DeviceHasNoAvailableChannels {
@@ -205,18 +253,19 @@ impl<M: AudioModule> AudioStream<M> {
             ),
             2 => output_device.build_output_stream(
                 &output_stream_config,
-                move |data: &mut [f32], _info: &cpal::OutputCallbackInfo| match from_input
-                    .read_interleaved(data)
-                {
-                    ReadStatus::Ok => {}
-                    ReadStatus::InputNotReady => {}
-                    ReadStatus::UnderflowOccurred { num_frames_read } => {
-                        error!("input underflowed ({num_frames_read}/{})", data.len() / 2);
-                    }
-                    ReadStatus::OverflowCorrected {
-                        num_frames_discarded,
-                    } => {
-                        error!("input overflowed ({num_frames_discarded} discarded)");
+                move |data: &mut [f32], _info: &cpal::OutputCallbackInfo| {
+                    info!("output data.len(): {} ", data.len());
+                    match from_input.read_interleaved(data) {
+                        ReadStatus::Ok => {}
+                        ReadStatus::InputNotReady => {}
+                        ReadStatus::UnderflowOccurred { num_frames_read } => {
+                            error!("input underflowed ({num_frames_read}/{})", data.len() / 2);
+                        }
+                        ReadStatus::OverflowCorrected {
+                            num_frames_discarded,
+                        } => {
+                            error!("input overflowed ({num_frames_discarded} discarded)");
+                        }
                     }
                 },
                 move |err| error!("Error on audio output stream: {}", err),
