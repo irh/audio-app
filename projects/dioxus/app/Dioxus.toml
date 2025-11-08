@@ -1,9 +1,11 @@
 [application]
 
+android_manifest = "AndroidManifest.xml"
+
 [web.app]
 
 # HTML title tag content
-title = "app_dioxus"
+title = "Freeverb"
 
 # include `assets` in web platform
 [web.resource]
