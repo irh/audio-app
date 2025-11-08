@@ -23,6 +23,8 @@ freeverb_plugin = { path = "crates/freeverb_plugin" }
 
 freeverb = "0.2.0"
 
+# Android Support for `log` 
+android_logger = "0.15"
 # Provides a convenient `Result` type
 anyhow = "1.0.100"
 # Multi-producer multi-consumer channels for message passing

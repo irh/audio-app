@@ -6,7 +6,7 @@ authors = { workspace = true }
 license = { workspace = true }
 
 [lib]
-crate-type = ["rlib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 audio_module = { workspace = true }
@@ -19,8 +19,40 @@ ui_egui = { path = "../ui" }
 anyhow = { workspace = true }
 
 [target.'cfg(not(target_os = "ios"))'.dependencies]
-eframe = { workspace = true, default-features = true }
+eframe = { workspace = true, features = ["glow"] }
 
 [target.'cfg(target_os = "ios")'.dependencies]
 eframe = { workspace = true, features = ["wgpu"] }
 wgpu = "27"
+
+[target.'cfg(target_os = "android")'.dependencies]
+android_logger = { workspace = true }
+eframe = { workspace = true, default-features = false, features = [
+  "android-native-activity",
+] }
+# This needs to be kept in sync with the version used by eframe
+winit = { version = "0.30.12" }
+
+[package.metadata.android]
+
+package = "com.example.freeverb"
+apk_name = "freeverb"
+build_targets = ["armv7-linux-androideabi", "aarch64-linux-android"]
+min_sdk_version = 29
+target_sdk_version = 30
+
+
+# [[package.metadata.android.uses_permission]]
+# name = "android.permission.RECORD_AUDIO"
+
+# [[package.metadata.android.uses_feature]]
+# name = "android.hardware.audio.low_latency"
+# required = false
+
+# [[package.metadata.android.uses_feature]]
+# name = "android.hardware.audio.output"
+# required = false
+
+# [[package.metadata.android.uses_feature]]
+# name = "android.hardware.audio.pro"
+# required = false
