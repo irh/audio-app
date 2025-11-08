@@ -25,33 +25,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "becf0eb5215b6ecb0a739c31c21bd83c4f326524c9b46b7e882d77559b60a529"
 
 [[package]]
-name = "accesskit"
-version = "0.21.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf203f9d3bd8f29f98833d1fbef628df18f759248a547e7e01cfbf63cda36a99"
-
-[[package]]
 name = "accesskit_atspi_common"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ce9928251cd5651ae983a77aeaa528471eed47cf705885e0b03249b72fe4e8e1"
 dependencies = [
- "accesskit 0.18.0",
- "accesskit_consumer 0.27.0",
- "atspi-common",
- "serde",
- "thiserror 1.0.69",
- "zvariant 5.8.0",
-]
-
-[[package]]
-name = "accesskit_atspi_common"
-version = "0.14.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "890d241cf51fc784f0ac5ac34dfc847421f8d39da6c7c91a0fcc987db62a8267"
-dependencies = [
- "accesskit 0.21.1",
- "accesskit_consumer 0.31.0",
+ "accesskit",
+ "accesskit_consumer",
  "atspi-common",
  "serde",
  "thiserror 1.0.69",
@@ -64,19 +44,9 @@ version = "0.27.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d0bf66a7bf0b7ea4fd7742d50b64782a88f99217cf246b3f93b4162528dde520"
 dependencies = [
- "accesskit 0.18.0",
+ "accesskit",
  "hashbrown 0.15.5",
  "immutable-chunkmap",
-]
-
-[[package]]
-name = "accesskit_consumer"
-version = "0.31.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db81010a6895d8707f9072e6ce98070579b43b717193d2614014abd5cb17dd43"
-dependencies = [
- "accesskit 0.21.1",
- "hashbrown 0.15.5",
 ]
 
 [[package]]
@@ -85,22 +55,8 @@ version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "09e230718177753b4e4ad9e1d9f6cfc2f4921212d4c1c480b253f526babb258d"
 dependencies = [
- "accesskit 0.18.0",
- "accesskit_consumer 0.27.0",
- "hashbrown 0.15.5",
- "objc2 0.5.2",
- "objc2-app-kit 0.2.2",
- "objc2-foundation 0.2.2",
-]
-
-[[package]]
-name = "accesskit_macos"
-version = "0.22.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0089e5c0ac0ca281e13ea374773898d9354cc28d15af9f0f7394d44a495b575"
-dependencies = [
- "accesskit 0.21.1",
- "accesskit_consumer 0.31.0",
+ "accesskit",
+ "accesskit_consumer",
  "hashbrown 0.15.5",
  "objc2 0.5.2",
  "objc2-app-kit 0.2.2",
@@ -113,26 +69,8 @@ version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2ef06642e9f02f1708ad55e1eaeb8ad6956c22917699c4f313afa4f8f1b5e664"
 dependencies = [
- "accesskit 0.18.0",
- "accesskit_atspi_common 0.11.0",
- "async-channel",
- "async-executor",
- "async-task",
- "atspi",
- "futures-lite",
- "futures-util",
- "serde",
- "zbus 5.12.0",
-]
-
-[[package]]
-name = "accesskit_unix"
-version = "0.17.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "301e55b39cfc15d9c48943ce5f572204a551646700d0e8efa424585f94fec528"
-dependencies = [
- "accesskit 0.21.1",
- "accesskit_atspi_common 0.14.2",
+ "accesskit",
+ "accesskit_atspi_common",
  "async-channel",
  "async-executor",
  "async-task",
@@ -149,26 +87,12 @@ version = "0.26.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "be08cadc069eaf5565fe82bbd6388e3bd66253e0b4f396311027660372d3d777"
 dependencies = [
- "accesskit 0.18.0",
- "accesskit_consumer 0.27.0",
+ "accesskit",
+ "accesskit_consumer",
  "hashbrown 0.15.5",
  "static_assertions",
  "windows 0.58.0",
  "windows-core 0.58.0",
-]
-
-[[package]]
-name = "accesskit_windows"
-version = "0.29.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d2d63dd5041e49c363d83f5419a896ecb074d309c414036f616dc0b04faca971"
-dependencies = [
- "accesskit 0.21.1",
- "accesskit_consumer 0.31.0",
- "hashbrown 0.15.5",
- "static_assertions",
- "windows 0.61.3",
- "windows-core 0.61.2",
 ]
 
 [[package]]
@@ -177,24 +101,10 @@ version = "0.26.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7c52889a9866302aae71be5b004291dd1e12cb0a7ea9899371f91205ff277dac"
 dependencies = [
- "accesskit 0.18.0",
- "accesskit_macos 0.19.0",
- "accesskit_unix 0.14.0",
- "accesskit_windows 0.26.0",
- "raw-window-handle 0.6.2",
- "winit",
-]
-
-[[package]]
-name = "accesskit_winit"
-version = "0.29.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8cfabe59d0eaca7412bfb1f70198dd31e3b0496fee7e15b066f9c36a1a140a0"
-dependencies = [
- "accesskit 0.21.1",
- "accesskit_macos 0.22.2",
- "accesskit_unix 0.17.2",
- "accesskit_windows 0.29.2",
+ "accesskit",
+ "accesskit_macos",
+ "accesskit_unix",
+ "accesskit_windows",
  "raw-window-handle 0.6.2",
  "winit",
 ]
@@ -358,6 +268,7 @@ dependencies = [
 name = "app_egui"
 version = "0.1.0"
 dependencies = [
+ "android_logger",
  "anyhow",
  "audio_module",
  "audio_stream",
@@ -367,6 +278,7 @@ dependencies = [
  "pretty_env_logger",
  "ui_egui",
  "wgpu 27.0.1",
+ "winit",
 ]
 
 [[package]]
@@ -771,7 +683,6 @@ name = "audio_stream"
 version = "0.1.0"
 dependencies = [
  "audio_module",
- "audio_thread_priority",
  "cpal",
  "crossbeam-channel",
  "fixed-resample",
@@ -785,20 +696,6 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
-]
-
-[[package]]
-name = "audio_thread_priority"
-version = "0.34.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7203799cd8063907524460aa8b632a46baba80c50947295aa6b92d7793c26447"
-dependencies = [
- "cfg-if",
- "dbus",
- "libc",
- "log",
- "mach2 0.4.3",
- "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -1747,7 +1644,7 @@ dependencies = [
  "jni",
  "js-sys",
  "libc",
- "mach2 0.5.0",
+ "mach2",
  "ndk",
  "ndk-context",
  "num-derive",
@@ -1762,7 +1659,7 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
- "windows 0.61.3",
+ "windows 0.58.0",
 ]
 
 [[package]]
@@ -1988,16 +1885,6 @@ name = "data-encoding"
 version = "2.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2a2330da5de22e8a3cb63252ce2abb30116bf5265e89c0e01bc17015ce30a476"
-
-[[package]]
-name = "dbus"
-version = "0.6.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "48b5f0f36f1eebe901b0e6bee369a77ed3396334bf3f09abd46454a576f71819"
-dependencies = [
- "libc",
- "libdbus-sys",
-]
 
 [[package]]
 name = "dconf_rs"
@@ -2837,7 +2724,6 @@ version = "0.33.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ab9b5d3376c79439f53a78bf7da1e3c0b862ffa3e29f46ab0f3e107430f2e576"
 dependencies = [
- "accesskit 0.21.1",
  "ahash 0.8.12",
  "bitflags 2.10.0",
  "emath",
@@ -2891,7 +2777,6 @@ version = "0.33.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bb4ea8cb063c00d8f23ce11279c01eb63a195a72be0e21d429148246dab7983e"
 dependencies = [
- "accesskit_winit 0.29.2",
  "arboard",
  "bytemuck",
  "egui",
@@ -4985,15 +4870,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2874a2af47a2325c2001a6e6fad9b16a53b802102b528163885171cf92b15976"
 
 [[package]]
-name = "libdbus-sys"
-version = "0.2.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5cbe856efeb50e4681f010e9aaa2bf0a644e10139e54cde10fc83a307c23bd9f"
-dependencies = [
- "pkg-config",
-]
-
-[[package]]
 name = "libloading"
 version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5169,15 +5045,6 @@ name = "mac"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c41e0c4fef86961ac6d6f8a82609f55f31b05e4fce149ac5710e439df7619ba4"
-
-[[package]]
-name = "mach2"
-version = "0.4.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d640282b302c0bb0a2a8e0233ead9035e3bed871f0b7e81fe4a1ec829765db44"
-dependencies = [
- "libc",
-]
 
 [[package]]
 name = "mach2"
@@ -9140,7 +9007,7 @@ name = "vizia_core"
 version = "0.3.0"
 source = "git+https://github.com/vizia/vizia?rev=c0ada337a12f3b132d8f41203f6c0eda56ef33d7#c0ada337a12f3b132d8f41203f6c0eda56ef33d7"
 dependencies = [
- "accesskit 0.18.0",
+ "accesskit",
  "bitflags 2.10.0",
  "chrono",
  "comrak",
@@ -9229,8 +9096,8 @@ name = "vizia_winit"
 version = "0.3.0"
 source = "git+https://github.com/vizia/vizia?rev=c0ada337a12f3b132d8f41203f6c0eda56ef33d7#c0ada337a12f3b132d8f41203f6c0eda56ef33d7"
 dependencies = [
- "accesskit 0.18.0",
- "accesskit_winit 0.26.0",
+ "accesskit",
+ "accesskit_winit",
  "copypasta",
  "gl",
  "glutin",

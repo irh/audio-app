@@ -30,17 +30,17 @@ A `cargo xtask` command is included that currently defers to `nih_plug::xtask` f
 
 ## Supported Frameworks
 
-| Framework | Version | Desktop | Mobile | Web | Plugin |
-| --------- | ------- | ------- | ------ | --- | ------ |
-| [Dioxus][dioxus] | `0.17`      | ✅ | ✅ | ✅ | ❌ |
-| [egui][egui]     | `0.33`      | ✅ | ✅ | ✅ | ✅ |
-| [iced][iced]     | `0.13.1`    | ✅ | ❌ | ❌ | ❌ |
-| [Vizia][vizia]   | `c0ada337a` | ✅ | ❌ | ❌ | ❌ |
+| Framework | Version | Desktop | iPhone | Android | Web | Plugin |
+| --------- | ------- | ------- | ------ | ------- | --- | ------ |
+| [Dioxus][dioxus] | `0.17`      | ✅ | ✅ | ✅ |✅ | ❌ |
+| [egui][egui]     | `0.33`      | ✅ | ✅ | ✅ |✅ | ✅ |
+| [iced][iced]     | `0.13.1`    | ✅ | ❌ | ❌ |❌ | ❌ |
+| [Vizia][vizia]   | `c0ada337a` | ✅ | ❌ | ❌ |❌ | ❌ |
 
 ### Notes
 
 - Desktop builds have only been tested so far on macOS.
-- Mobile builds have only been tested so far on iPhones.
+- Android builds require a minimum of API 26.
 - Plugin support is currently underdeveloped.
   - `nih_plug` currently supports older versions of `egui`, `iced`, and `vizia`. Plugin support for `egui` is enabled via a fork of `nih_plug` that supports `v0.33`. Support for `iced` and `vizia` should be possible, but will either require further patching.
 

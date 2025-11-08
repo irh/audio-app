@@ -12,7 +12,6 @@ crossbeam-channel = { workspace = true }
 thiserror = { workspace = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-audio_thread_priority = "0.34.0"
 # Using a fork for iOS and Android fixes
 cpal = { git = "https://github.com/irh/cpal", rev = "dc84929c7154f0dd5c540d5375bf72008dc910dd" }
 log = { workspace = true }
