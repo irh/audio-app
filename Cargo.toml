@@ -1,13 +1,10 @@
 [workspace]
 members = [
   "crates/*",
-  "apps/egui/app",
-  "apps/egui/ui",
-  "apps/egui/plugin",
-  "apps/egui/web",
-  "apps/iced/app",
-  "apps/vizia/app",
-  "apps/dioxus/app",
+  "apps/dioxus",
+  "apps/egui/*",
+  "apps/iced",
+  "apps/vizia",
   "xtask",
 ]
 resolver = "2"
