@@ -1,4 +1,7 @@
 # .git-blame-ignore-revs
 
+# Flatten the /apps dir
+3c5d17c8879b4893a951d617b11b42978dd1ecf9
+
 # Rename /projects -> /apps
 98e92074abedf3c51038e51454209f6d93caa6b5
