@@ -30,7 +30,9 @@ impl<M: AudioModule> AudioStream<M> {
     pub fn new() -> Result<Self> {
         #[cfg(target_os = "android")]
         {
-            android::request_recording_permission();
+            if let Err(error) = android::request_recording_permission() {
+                error!("Failed to get recording permission: {error}");
+            }
         }
 
         #[cfg(target_os = "ios")]

@@ -1,5 +1,5 @@
 use android_permissions::{PermissionManager, RECORD_AUDIO};
-use anyhow::{Result, bail};
+use anyhow::Result;
 use jni::{JavaVM, objects::JObject};
 
 #[cfg(target_os = "android")]
