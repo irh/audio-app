@@ -1,8 +1,14 @@
 pub trait ValueConverter: Send + Sync {
+    /// The minimum allowed value.
     fn min(&self) -> f32;
+
+    /// The maximum allowed value.
     fn max(&self) -> f32;
 
+    /// Converts from a user-facing value into a linear value in the range `0..=1`.
     fn user_to_linear(&self, value: f32) -> f32;
+
+    /// Converts from a linear value in the range `0..=1` into a user-facing value.
     fn linear_to_user(&self, value: f32) -> f32;
 }
 

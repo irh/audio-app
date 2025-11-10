@@ -29,13 +29,14 @@ pub fn parameter_slider(
     let name = parameter.name();
     let value = parameter.value;
     let string_converter = parameter.string_converter();
-    let default_value = parameter.default_user_value();
+    let value_converter = parameter.value_converter();
+    let default_value = value_converter.user_to_linear(parameter.default_user_value());
 
     let caption = text(name.to_string());
 
     let slider = container(
         slider(0.0..=1.0, value, move |new_value| {
-            Message::SetFloat(id, new_value)
+            Message::SetFloat(id, value_converter.linear_to_user(new_value))
         })
         .default(default_value)
         .step(0.01)
