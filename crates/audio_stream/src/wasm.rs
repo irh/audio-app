@@ -212,7 +212,7 @@ impl<M> Drop for AudioStream<M> {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct ToProcessorSender {
     processor_node: AudioWorkletNode,
 }

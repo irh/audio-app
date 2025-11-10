@@ -9,8 +9,15 @@ use std::sync::Arc;
 
 const MAIN_CSS: Asset = asset!("/assets/main.css");
 
-pub type FreeverbStream = AudioStream<FreeverbModule>;
-pub static AUDIO_STREAM: GlobalSignal<Option<Arc<FreeverbStream>>> = Signal::global(|| None);
+// A wrapper for the audio stream that can be used as a signal
+#[derive(Clone)]
+struct FreeverbStream(Arc<AudioStream<FreeverbModule>>);
+
+impl PartialEq for FreeverbStream {
+    fn eq(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.0, &other.0)
+    }
+}
 
 #[component]
 pub fn App() -> Element {
@@ -36,18 +43,26 @@ pub fn App() -> Element {
     // Create a signal for enabling or disabling the audio stream.
     let mut audio_enabled = use_signal(|| false);
     // Create or destroy the audio stream when `audio_enabled` changes.
-    use_effect(move || {
+    let audio_stream = use_memo(move || {
         if audio_enabled() {
             match AudioStream::new() {
-                Ok(stream) => *AUDIO_STREAM.write() = Some(Arc::new(stream)),
+                Ok(stream) => Some(FreeverbStream(Arc::new(stream))),
                 Err(error) => {
                     error!("Failed to create audio stream: {error}");
                     *audio_enabled.write() = false;
+                    None
                 }
             }
         } else {
-            *AUDIO_STREAM.write() = None;
+            None
         }
+    });
+
+    // Derive a signal from the audio stream that provides the to_processor sender
+    let to_processor = use_memo(move || {
+        audio_stream()
+            .as_ref()
+            .map(|stream| stream.0.to_processor())
     });
 
     rsx! {
@@ -69,11 +84,11 @@ pub fn App() -> Element {
             }
         }
 
-        ParameterSlider { parameter: parameters.dampening }
-        ParameterSlider { parameter: parameters.width }
-        ParameterSlider { parameter: parameters.room_size }
-        ParameterToggle { parameter: parameters.freeze }
-        ParameterSlider { parameter: parameters.dry }
-        ParameterSlider { parameter: parameters.wet }
+        ParameterSlider { parameter: parameters.dampening, to_processor: to_processor }
+        ParameterSlider { parameter: parameters.width, to_processor: to_processor }
+        ParameterSlider { parameter: parameters.room_size, to_processor: to_processor }
+        ParameterToggle { parameter: parameters.freeze, to_processor: to_processor }
+        ParameterSlider { parameter: parameters.dry, to_processor: to_processor }
+        ParameterSlider { parameter: parameters.wet, to_processor: to_processor }
     }
 }

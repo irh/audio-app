@@ -1,12 +1,15 @@
-use super::app::AUDIO_STREAM;
 use audio_module::{FloatParameter, Parameter, PushMessage, ToProcessor};
+use audio_stream::ToProcessorSender;
 use dioxus::prelude::*;
 use dioxus_primitives::slider::{
     self, SliderRangeProps, SliderThumbProps, SliderTrackProps, SliderValue,
 };
 
 #[component]
-pub fn ParameterSlider(parameter: FloatParameter) -> Element {
+pub fn ParameterSlider(
+    parameter: FloatParameter,
+    to_processor: ReadSignal<Option<ToProcessorSender>>,
+) -> Element {
     let id = parameter.id();
     let value_converter = parameter.value_converter();
     let string_converter = parameter.string_converter();
@@ -29,7 +32,7 @@ pub fn ParameterSlider(parameter: FloatParameter) -> Element {
 
     // Send updated values to the processor.
     use_effect(move || {
-        if let Some(to_processor) = AUDIO_STREAM().map(|stream| stream.to_processor()) {
+        if let Some(to_processor) = to_processor() {
             to_processor.push(ToProcessor::SetParameter(id, value()));
         }
     });

@@ -317,6 +317,12 @@ impl PushMessage<ToProcessor> for ToProcessorSender {
     }
 }
 
+impl PartialEq for ToProcessorSender {
+    fn eq(&self, other: &Self) -> bool {
+        self.0.same_channel(&other.0)
+    }
+}
+
 /// An implementation of [PopMessage] that gets passed into the processor.
 ///
 /// Receives messages from [ToProcessorSender].

@@ -1,17 +1,20 @@
-use super::app::AUDIO_STREAM;
 use audio_module::{BoolParameter, Parameter, PushMessage, ToProcessor};
+use audio_stream::ToProcessorSender;
 use dioxus::prelude::*;
 use dioxus_primitives::toggle::{self, ToggleProps};
 
 #[component]
-pub fn ParameterToggle(parameter: BoolParameter) -> Element {
+pub fn ParameterToggle(
+    parameter: BoolParameter,
+    to_processor: ReadSignal<Option<ToProcessorSender>>,
+) -> Element {
     let mut value = use_signal(|| parameter.value);
 
     let name = use_hook(|| parameter.name().to_string());
     let id = parameter.id();
 
     use_effect(move || {
-        if let Some(to_processor) = AUDIO_STREAM().map(|stream| stream.to_processor()) {
+        if let Some(to_processor) = to_processor() {
             let value = if value() { 1.0 } else { 0.0 };
             to_processor.push(ToProcessor::SetParameter(id, value));
         }
