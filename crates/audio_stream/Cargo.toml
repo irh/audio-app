@@ -46,6 +46,15 @@ web-sys = { workspace = true, features = [
   "Window",
 ] }
 
+[target.'cfg(target_os = "android")'.dependencies]
+# Android Permissions for Rust
+android-permissions = "0.1.2"
+anyhow = {workspace = true}
+# Rust bindings to the JNI
+jni = "0.21.1"
+# Handles for accessing Android APIs
+ndk-context = "0.1.1"
+
 [target.'cfg(target_os = "ios")'.dependencies]
 objc2 = "0.6.3"
 objc2-avf-audio = { version = "0.3.2", default-features = false, features = [

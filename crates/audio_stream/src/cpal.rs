@@ -1,4 +1,6 @@
-// #[cfg(target_os = "ios")]
+#[cfg(target_os = "android")]
+mod android;
+#[cfg(target_os = "ios")]
 mod ios;
 
 use audio_module::{AudioModule, AudioProcessor, PopMessage, PushMessage, ToProcessor};
@@ -27,6 +29,11 @@ pub struct AudioStream<M: AudioModule> {
 
 impl<M: AudioModule> AudioStream<M> {
     pub fn new() -> Result<Self> {
+        #[cfg(target_os = "android")]
+        {
+            android::request_recording_permission();
+        }
+
         #[cfg(target_os = "ios")]
         {
             ios::setup_audio_session();

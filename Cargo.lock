@@ -207,6 +207,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "android-permissions"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d3b4eabf57cddc2cd9934aabb1d17f3c9f1f1cfcac48746944fcff76ed0f62bb"
+dependencies = [
+ "android_logger 0.13.3",
+ "jni",
+ "log",
+ "thiserror 1.0.69",
+ "walkdir",
+]
+
+[[package]]
 name = "android-properties"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -217,6 +230,18 @@ name = "android_log-sys"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "84521a3cf562bc62942e294181d9eef17eb38ceb8c68677bc49f144e4c3d4f8d"
+
+[[package]]
+name = "android_logger"
+version = "0.13.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c494134f746c14dc653a35a4ea5aca24ac368529da5370ecf41fe0341c35772f"
+dependencies = [
+ "android_log-sys",
+ "env_logger",
+ "log",
+ "once_cell",
+]
 
 [[package]]
 name = "android_logger"
@@ -254,7 +279,7 @@ checksum = "170433209e817da6aae2c51aa0dd443009a613425dd041ebfb2492d1c4c11a25"
 name = "app_dioxus"
 version = "0.1.0"
 dependencies = [
- "android_logger",
+ "android_logger 0.15.1",
  "anyhow",
  "audio_module",
  "audio_stream",
@@ -268,7 +293,7 @@ dependencies = [
 name = "app_egui"
 version = "0.1.0"
 dependencies = [
- "android_logger",
+ "android_logger 0.15.1",
  "anyhow",
  "audio_module",
  "audio_stream",
@@ -682,12 +707,16 @@ version = "0.1.0"
 name = "audio_stream"
 version = "0.1.0"
 dependencies = [
+ "android-permissions",
+ "anyhow",
  "audio_module",
  "cpal",
  "crossbeam-channel",
  "fixed-resample",
+ "jni",
  "js-sys",
  "log",
+ "ndk-context",
  "objc2 0.6.3",
  "objc2-avf-audio",
  "serde",
@@ -1659,7 +1688,7 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
- "windows 0.58.0",
+ "windows 0.61.3",
 ]
 
 [[package]]
