@@ -17,13 +17,12 @@ use log::{debug, error, info};
 use std::num::NonZeroUsize;
 use thiserror::Error;
 
-#[allow(unused)]
 pub struct AudioStream<M: AudioModule> {
     to_processor: ToProcessorSender,
     from_processor: FromProcessorReceiver<M::Processor>,
-    input_stream: cpal::Stream,
-    output_stream: cpal::Stream,
     sample_rate: usize,
+    _input_stream: cpal::Stream,
+    _output_stream: cpal::Stream,
 }
 
 impl<M: AudioModule> AudioStream<M> {
@@ -284,9 +283,9 @@ Audio stream started:
         Ok(AudioStream {
             to_processor: to_processor_sender,
             from_processor: from_processor_receiver,
-            input_stream,
-            output_stream,
             sample_rate: input_sample_rate as usize,
+            _input_stream: input_stream,
+            _output_stream: output_stream,
         })
     }
 
