@@ -3,6 +3,7 @@ mod android;
 #[cfg(target_os = "ios")]
 mod ios;
 
+use crate::DEFAULT_BUFFER_SIZE;
 use audio_module::{AudioModule, AudioProcessor, PopMessage, PushMessage, ToProcessor};
 use cpal::{
     SupportedBufferSize,
@@ -15,8 +16,6 @@ use fixed_resample::{
 use log::{debug, error, info};
 use std::num::NonZeroUsize;
 use thiserror::Error;
-
-pub const DEFAULT_BUFFER_SIZE: usize = 128;
 
 #[allow(unused)]
 pub struct AudioStream<M: AudioModule> {

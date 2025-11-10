@@ -3,7 +3,7 @@ fn main() {
     {
         use std::{env, fs, path::Path, process::Command};
 
-        let root = format!("{}/../../..", env::var("CARGO_MANIFEST_DIR").unwrap());
+        let root = format!("{}/../..", env::var("CARGO_MANIFEST_DIR").unwrap());
         let audio_worklet_path =
             format!("{root}/crates/audio_stream/src/wasm/audio_stream_worklet.js");
 
