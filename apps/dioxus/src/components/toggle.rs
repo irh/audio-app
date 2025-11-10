@@ -1,4 +1,4 @@
-use crate::AUDIO_STREAM;
+use super::app::AUDIO_STREAM;
 use audio_module::{BoolParameter, Parameter, PushMessage, ToProcessor};
 use dioxus::prelude::*;
 use dioxus_primitives::toggle::{self, ToggleProps};

@@ -1,4 +1,4 @@
-use crate::AUDIO_STREAM;
+use super::app::AUDIO_STREAM;
 use audio_module::{FloatParameter, Parameter, PushMessage, ToProcessor};
 use dioxus::prelude::*;
 use dioxus_primitives::slider::{
