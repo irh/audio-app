@@ -54,7 +54,7 @@ impl eframe::App for App {
                 // Add some padding at the top of the window to avoid camera cutouts, etc.
                 // This can be removed once egui has support for automatically avoiding Android
                 // window insets.
-                ui.add_space(20.0);
+                ui.add_space(100.0);
             }
 
             ui.horizontal(|ui| {
