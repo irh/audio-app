@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 
-RELEASE_FLAG=""
+PROFILE="debug"
+PROFILE_FLAG=""
 while [[ $# -gt 0 ]]; do
     case $1 in
         --release|release)
-            RELEASE_FLAG="--release"
+            PROFILE="release"
+            PROFILE_FLAG="--release"
             shift
             ;;
         *)
@@ -20,19 +22,19 @@ cp ../../../crates/audio_stream/src/wasm/audio_stream_worklet.js public/
 cargo build \
   -p freeverb_module \
   --target wasm32-unknown-unknown \
-  $RELEASE_FLAG
+  $PROFILE_FLAG
 wasm-bindgen \
   --out-dir public \
   --out-name freeverb \
   --no-modules --no-typescript \
-  ../../../target/wasm32-unknown-unknown/debug/freeverb_module.wasm
+  ../../../target/wasm32-unknown-unknown/$PROFILE/freeverb_module.wasm
 
 cargo build \
   -p web_egui \
   --target wasm32-unknown-unknown \
-  $RELEASE_FLAG
+  $PROFILE_FLAG
 wasm-bindgen \
   --out-dir public \
   --out-name web_egui \
   --no-modules --no-typescript \
-  ../../../target/wasm32-unknown-unknown/debug/web_egui.wasm
+  ../../../target/wasm32-unknown-unknown/$PROFILE/web_egui.wasm
