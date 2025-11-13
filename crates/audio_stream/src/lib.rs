@@ -4,4 +4,4 @@ mod audio_stream;
 
 pub use crate::audio_stream::*;
 
-pub const DEFAULT_BUFFER_SIZE: usize = 128;
+pub const FRAMES_PER_UPDATE: usize = 128;

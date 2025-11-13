@@ -10,7 +10,7 @@ use log::LevelFilter;
 
 fn main() -> Result<()> {
     pretty_env_logger::formatted_builder()
-        .filter_level(LevelFilter::Info)
+        .filter_level(LevelFilter::Debug)
         .init();
 
     eframe::run_native(

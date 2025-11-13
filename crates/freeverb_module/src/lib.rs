@@ -5,7 +5,7 @@ use audio_module::{
     AudioModule, AudioProcessor, BoolParameter, FloatParameter, Parameters, PercentStringConverter,
     PopMessage, PushMessage, ToProcessor,
 };
-use audio_stream::DEFAULT_BUFFER_SIZE;
+use audio_stream::FRAMES_PER_UPDATE;
 use freeverb::{Float, Freeverb};
 
 pub struct FreeverbModule;
@@ -29,7 +29,7 @@ pub enum ToFreeverb {
 #[cfg_attr(target_arch = "wasm32", derive(serde::Serialize, serde::Deserialize))]
 pub enum FromFreeverb {
     #[cfg_attr(target_arch = "wasm32", serde(with = "serde_arrays"))]
-    ScopeBuffer([(f32, f32); DEFAULT_BUFFER_SIZE]),
+    ScopeBuffer([(f32, f32); FRAMES_PER_UPDATE]),
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -189,7 +189,7 @@ impl<T: Float> AudioProcessor for FreeverbProcessor<T> {
         }
 
         if self.scope_enabled {
-            let mut scope_buffer = [(0.0, 0.0); DEFAULT_BUFFER_SIZE];
+            let mut scope_buffer = [(0.0, 0.0); FRAMES_PER_UPDATE];
 
             for (process_frame, scope_frame) in frames.iter_mut().zip(scope_buffer.iter_mut()) {
                 let (out_left, out_right) = self

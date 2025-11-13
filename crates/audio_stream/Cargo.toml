@@ -8,15 +8,16 @@ license.workspace = true
 [dependencies]
 audio_module = { workspace = true }
 
+audio_thread_priority = "0.34.0"
 crossbeam-channel = { workspace = true }
 thiserror = { workspace = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 # Using a fork for iOS and Android fixes
 cpal = { git = "https://github.com/irh/cpal", rev = "dc84929c7154f0dd5c540d5375bf72008dc910dd" }
-log = { workspace = true }
 # An easy to use crate for resampling at a fixed ratio
 fixed-resample = "0.9.2"
+log = { workspace = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 js-sys = { workspace = true }
@@ -49,7 +50,7 @@ web-sys = { workspace = true, features = [
 [target.'cfg(target_os = "android")'.dependencies]
 # Android Permissions for Rust
 android-permissions = "0.1.2"
-anyhow = {workspace = true}
+anyhow = { workspace = true }
 # Rust bindings to the JNI
 jni = "0.21.1"
 # Handles for accessing Android APIs
